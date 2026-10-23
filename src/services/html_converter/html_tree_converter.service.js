@@ -1,5 +1,4 @@
 import { getTagName } from './utility.service.js'
-import { unescape } from 'lodash'
 
 /**
  * This is a not-so-tiny purpose-built HTML parser/processor. This parses html
@@ -50,7 +49,12 @@ export const convertHtmlToTree = (html = '') => {
 
   const handleOpen = (tag) => {
     const curBuf = getCurrentBuffer()
-    const newLevel = [unescape(tag), []]
+    // Keep the opener entity-encoded. FastSanitize writes quotes inside
+    // attribute values as &quot; / &#39;. Decoding the raw tag before
+    // getAttrs turns those into delimiters and can reintroduce attributes
+    // the scrubber did not emit. Values are decoded in getAttrs after
+    // they have been delimited. Text nodes are decoded separately.
+    const newLevel = [tag, []]
     levels.push(newLevel)
     curBuf.push(newLevel)
   }

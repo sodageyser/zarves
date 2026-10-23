@@ -50,6 +50,26 @@ describe('RichContent', () => {
     expect(wrapper.html().replace(/\n/g, '')).to.eql(compwrap(html))
   })
 
+  it('decodes delimited attribute values when rendering a link', () => {
+    const html = '<p><a href="https://example.com/?a=1&amp;b=2" title="Tom &amp; Jerry&#39;s &quot;cafe&quot;">link</a></p>'
+    const wrapper = shallowMount(RichContent, {
+      global,
+      props: {
+        attentions,
+        handleLinks: true,
+        greentext: true,
+        emoji: [],
+        html
+      }
+    })
+
+    const link = wrapper.find('a')
+    expect(link.attributes('href')).to.eql('https://example.com/?a=1&b=2')
+    expect(link.attributes('title')).to.eql('Tom & Jerry\'s "cafe"')
+    expect(link.attributes('target')).to.eql('_blank')
+    expect(link.text()).to.eql('link')
+  })
+
   it('unescapes everything as needed', () => {
     const html = [
       p('Testing &#39;em all'),

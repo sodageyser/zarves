@@ -33,5 +33,21 @@ describe('html_converter utility', () => {
 
       expect(getAttrs(input)).to.eql(output)
     })
+
+    it('decodes entities only after quotes have delimited the value', () => {
+      const input = '<a href="https://example.com/?a=1&amp;b=2" title=\'Tom &amp; Jerry&#39;s &quot;cafe&quot;\'>'
+      expect(getAttrs(input, () => true)).to.eql({
+        href: 'https://example.com/?a=1&b=2',
+        title: 'Tom & Jerry\'s "cafe"'
+      })
+    })
+
+    it('does not turn encoded quotes inside a value into extra attributes', () => {
+      const input = '<span title="alpha&quot; data-extra=&quot;beta">'
+      const attrs = getAttrs(input, () => true)
+
+      expect(Object.keys(attrs)).to.eql(['title'])
+      expect(attrs.title).to.eql('alpha" data-extra="beta')
+    })
   })
 })

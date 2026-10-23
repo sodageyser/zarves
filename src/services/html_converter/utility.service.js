@@ -1,3 +1,5 @@
+import { unescape } from 'lodash'
+
 /**
  * Extract tag name from tag opener/closer.
  *
@@ -14,7 +16,9 @@ export const getTagName = (tag) => {
  *
  * @param {String} tag - tag string, i.e. '<a href="...">'
  * @return {Object} - map of attributes key = attribute name, value = attribute value
- *   attributes without values represented as boolean true
+ *   attributes without values represented as boolean true.
+ *   Quoted values are entity-decoded only after the surrounding quotes
+ *   have delimited them.
  */
 export const getAttrs = (tag, filter) => {
   const innertag = tag
@@ -26,7 +30,9 @@ export const getAttrs = (tag, filter) => {
     .map(([trash, key, value]) => [key, value])
     .map(([k, v]) => {
       if (!v) return [k, true]
-      return [k, v.substring(1, v.length - 1)]
+      // Delimit on real quotes first, then decode. Decoding the whole tag
+      // earlier would treat scrubber-escaped quotes as new delimiters.
+      return [k, unescape(v.substring(1, v.length - 1))]
     })
   const defaultFilter = ([k, v]) => {
     const attrKey = k.toLowerCase()
